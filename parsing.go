@@ -1,4 +1,4 @@
-// Package parsing provides basic search and comparision of HTML documents.
+// Package parsing provides basic search and comparison of HTML documents.
 // To limit storage of references, it uses the net/html package and its Node type to structure HTML.
 // Search a tag in a Node with options
 // - searching a tag based on its name whatever attributes where its type is optional
@@ -34,7 +34,7 @@ Problem is the order is sometimes relevant. So relaxing completely the order of 
 TODO iota (html.ErrorNode) seems difficult to produce and looks like the right default
 You can first check that no ErrorNode was created before comparing for instance
 */
-// Parsefile returns a *Node containing the parsed file
+// ParseFile returns a *Node containing the parsed file
 func ParseFile(f string) *html.Node {
 	file, err := os.Open(f)
 	if err != nil {
@@ -49,6 +49,7 @@ func ParseFile(f string) *html.Node {
 }
 
 // String-based search
+
 // ExploreNode prints node tags with name s and type t
 // Without name, all tags are printed
 // When type ErrorNode (iota == 0) prints tags of all types
@@ -67,7 +68,7 @@ func ExploreNode(n *html.Node, s string, t html.NodeType) {
 	}
 }
 
-// Prints node structure until a tag name is found (whatever attributes)
+// PrintTags prints node structure until a tag name is found (whatever attributes)
 // Without name, all tags are printed
 // tagOnly selects ElementNode, otherwise tags are printed whatever type.
 // If node tree has no Errornode, there is no difference with previous
@@ -87,7 +88,7 @@ func PrintTags(n *html.Node, s string, tagOnly bool) {
 	}
 }
 
-// Find first occurence of a tag name (i.e. whatever its attributes).
+// FindTag finds the first occurrence of a tag name (i.e. whatever its attributes).
 // If ErrorNode is passed, any tag type will be searched
 func FindTag(n *html.Node, s string, t html.NodeType) *html.Node {
 	if n.Data == s && (n.Type == t || t == html.ErrorNode) {
@@ -181,12 +182,11 @@ func printData(n *html.Node) string {
 	nattr := ""
 	if len(n.Attr) != 0 {
 		nattr = fmt.Sprintf("%v", n.Attr)
-		nattr = fmt.Sprintf("%v", n.Attr)
 	}
 	return n.Data + " (" + nodeTypeNames[n.Type] + ") " + nattr + ns
 }
 
-// Find first occurence of a node
+// FindNode find the first occurrence of a node
 func FindNode(m *html.Node, n html.Node) *html.Node {
 	if Equal(m, &n) {
 		//
@@ -202,6 +202,7 @@ func FindNode(m *html.Node, n html.Node) *html.Node {
 }
 
 // Tree handling
+
 // IncludeNode checks if n is included in m.
 // Included means that the subtree is identical to m including order of siblings.
 // If it is, nil is returned. Otherwise, the tag from which trees diverge is returned.
@@ -267,7 +268,7 @@ func IncludedNodeTyped(m, n *html.Node, t html.NodeType) *html.Node {
 	return nil
 }
 
-// Identical nodes fail if trees have different size
+// IdenticalNodes fails if trees have different size
 func IdenticalNodes(m, n *html.Node, t html.NodeType) *html.Node {
 	if !Equal(m, n) {
 		// Difference matters only if type is as requested

@@ -9,7 +9,7 @@ import (
 )
 
 // ExampleIncludeNode is using the provided files to demonstrate use
-func ExampleIncludeNode() {
+func ExampleIncludedNode() {
 	// f1 est une partie de f2
 	toFind := html.Node{nil, nil, nil, nil, nil, html.ElementNode,
 		0, "table", "",
