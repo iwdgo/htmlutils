@@ -5,3 +5,7 @@
 # html.Node trees
 
 Module provides basic tools to search and compare html.Node trees
+
+# Remark
+
+The important is in Go despite the HTML dot caused by the samples
