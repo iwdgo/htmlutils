@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"golang.org/x/net/html"
 	"log"
-	"testing"
 )
 
 // ExampleIncludeNode is using the provided files to demonstrate use
@@ -38,42 +37,35 @@ func ExampleIncludedNode() {
 const HTMLf = `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
 
 // Printing the node tree
-func TestExampleExploreNodeTags(t *testing.T) {
+func ExampleExploreNodeTags() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
-	o, err := html.Parse(b)
+	o, err := html.Parse(b) // Only place where err of Parse is checked
 	if err != nil {
 		log.Fatalf("parsing error:%v\n", err)
 	}
 	ExploreNode(o, "", html.TextNode)
 	// Output: HTML Fragment to compare against  (Text)
-	// others below (Text)       to test  (Text)
-	// diffs (Text)
+	//  others below (Text) to test  (Text)
+	//  diffs (Text)
 }
-func TestExampleExploreNodeAll(t *testing.T) {
+func ExampleExploreNodeAll() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
-	o, err := html.Parse(b)
-	if err != nil {
-		log.Fatalf("parsing error:%v\n", err)
-	}
+	o, _ := html.Parse(b)
 	ExploreNode(o, "", html.ErrorNode)
-	// Output:
-	//  (Document)
-	// html (Element)
-	// head (Element)          body (Element)
-	// p (Element) [{ class ex1}]
-	// HTML Fragment to compare against  (Text)        em (Element)
-	// others below (Text)      to test  (Text)        sub (Element)
-	// diffs (Text)
+	// Output: (Document)
+	//  html (Element)
+	//  head (Element) body (Element)
+	//  p (Element) [{ class ex1}]
+	//  HTML Fragment to compare against  (Text) em (Element)
+	//  others below (Text) to test  (Text) sub (Element)
+	//  diffs (Text)
 }
-func TestExamplePrintTagswoSearch(t *testing.T) {
+func ExamplePrintTagswoSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
-	o, err := html.Parse(b)
-	if err != nil {
-		log.Fatalf("parsing error:%v\n", err)
-	}
+	o, _ := html.Parse(b)
 	PrintTags(o, "", false) // +1,6%
 	// Output:
 	// (Document)
@@ -89,41 +81,51 @@ func TestExamplePrintTagswoSearch(t *testing.T) {
 	//diffs (Text)
 }
 
-//
-func TestExamplePrintTagswSearch(t *testing.T) {
+// Same as before but only tags stopping at a searched tag
+func ExamplePrintTagswSearch() {
 	b := new(bytes.Buffer)
-	fmt.Fprint(b, `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`)
-	o, err := html.Parse(b)
-	if err != nil {
-		log.Fatalf("parsing error:%v\n", err)
-	}
-	PrintTags(o, "em", false) // +1,6%
+	fmt.Fprint(b, HTMLf)
+	o, _ := html.Parse(b)    // err ignored as failure is detected before
+	PrintTags(o, "em", true) //
 	// Output:
-	// (Document)
 	//html (Element)
 	//head (Element)
 	//body (Element)
 	//p (Element) [{ class ex1}]
-	//HTML Fragment to compare against  (Text)
 	//em (Element)
 	//[em] found. Stopping exploration
-	// to test  (Text)
 	//sub (Element)
-	//diffs (Text)
 }
 
-func TestExamplePrintNodes(t *testing.T) {
+func ExamplePrintNodeswoSearch() {
 	b := new(bytes.Buffer)
-	fmt.Fprint(b, `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`)
-	o, err := html.Parse(b)
-	if err != nil {
-		log.Fatalf("parsing error:%v\n", err)
-	}
+	fmt.Fprint(b, HTMLf)
+	o, _ := html.Parse(b)
 	PrintNodes(o, nil, html.ErrorNode, 0)
 	// Output: html (Element)
-	//.head (Element) body (Element)
-	//..p (Element) [{ class ex1}]
-	//...HTML Fragment to compare against  (Text) em (Element)
-	//....others below (Text)  to test  (Text) sub (Element)
-	//....diffs (Text)
+	//. head (Element) body (Element)
+	//.. p (Element) [{ class ex1}]
+	//... HTML Fragment to compare against  (Text) em (Element)
+	//.... others below (Text) to test  (Text) sub (Element)
+	//.... diffs (Text)
+}
+
+func ExamplePrintNodeswSearch() {
+	b := new(bytes.Buffer)
+	fmt.Fprint(b, HTMLf)
+	o, _ := html.Parse(b)
+
+	var tagToFind html.Node
+	tagToFind.Type = html.ElementNode
+	tagToFind.Data = "p"
+	tagToFind.Attr = []html.Attribute{{"", "class", "ex1"}}
+
+	PrintNodes(o, &tagToFind, html.ErrorNode, 0)
+	// Output: html (Element)
+	//. head (Element) body (Element)
+	//.. p (Element) [{ class ex1}]
+	//tag found: p (Element) [{ class ex1}]
+	//... HTML Fragment to compare against  (Text) em (Element)
+	//.... others below (Text) to test  (Text) sub (Element)
+	//.... diffs (Text)
 }

@@ -16,10 +16,12 @@
 package parsing
 
 import (
+	"bytes"
 	"fmt"
 	"golang.org/x/net/html"
 	"log"
 	"os"
+	"strings"
 )
 
 var nodeTypeNames = []string{"Error", "Text", "Document", "Element", "Comment", "DocType"}
@@ -35,6 +37,7 @@ TODO iota (html.ErrorNode) seems difficult to produce and looks like the right d
 You can first check that no ErrorNode was created before comparing for instance
 */
 // ParseFile returns a *Node containing the parsed file
+// Func cannot be tested and maximum test coverage is 98.3%
 func ParseFile(f string) *html.Node {
 	file, err := os.Open(f)
 	if err != nil {
@@ -56,12 +59,12 @@ func ParseFile(f string) *html.Node {
 func ExploreNode(n *html.Node, s string, t html.NodeType) {
 	if n.Type == t || t == html.ErrorNode {
 		if n.Data == s || s == "" {
-			fmt.Printf("%s \t", printData(n))
+			fmt.Printf(" %s", printData(n))
 		}
 	}
 	// Something will print
 	if n.FirstChild != nil {
-		fmt.Println() // Siblings on one line
+		fmt.Print("\n") // Siblings on one line
 	}
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		ExploreNode(c, s, t)
@@ -117,18 +120,27 @@ func indent(i int) (s string) {
 // html.ErrorNode (iota) displays every tag except the error node.
 func PrintNodes(m, n *html.Node, t html.NodeType, d int) {
 	if Equal(m, n) {
-		fmt.Printf("tag found: %s", printData(m))
+		fmt.Printf("\ntag found: %s", printData(m))
 	}
-
 	if m.FirstChild != nil {
 		fmt.Printf("\n%s", indent(d)) // Siblings on one line
 	}
 	d++
 	for o := m.FirstChild; o != nil; o = o.NextSibling {
 		if o.Type == t || t == html.ErrorNode {
-			fmt.Printf("%s", printData(o))
+			fmt.Printf(" %s", printData(o))
 		}
 		PrintNodes(o, n, t, d)
+	}
+}
+
+// GetText prints the text content of a tree structure like PrintNodes w/o any formatting
+func GetText(m *html.Node, b *bytes.Buffer) {
+	for o := m.FirstChild; o != nil; o = o.NextSibling {
+		if o.Type == html.TextNode {
+			fmt.Fprint(b, o.Data)
+		}
+		GetText(o, b)
 	}
 }
 
@@ -183,7 +195,7 @@ func printData(n *html.Node) string {
 	if len(n.Attr) != 0 {
 		nattr = fmt.Sprintf("%v", n.Attr)
 	}
-	return n.Data + " (" + nodeTypeNames[n.Type] + ") " + nattr + ns
+	return strings.TrimSpace(n.Data + " (" + nodeTypeNames[n.Type] + ") " + nattr + ns)
 }
 
 // FindNode find the first occurrence of a node
@@ -212,8 +224,6 @@ func IncludedNode(m, n *html.Node) *html.Node {
 		// Return the non-nil value
 		if m == nil {
 			return n
-		} else if n == nil {
-			return m
 		}
 		return m // returning the tree that includes
 	}

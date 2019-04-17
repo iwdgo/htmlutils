@@ -76,6 +76,17 @@ func TestPrintData(t *testing.T) {
 	}
 }
 
+func TestGetText(t *testing.T) {
+	b := new(bytes.Buffer)
+	fmt.Fprint(b, HTMLf)
+	o, _ := html.Parse(b) // Any parsing error would occurred elsewhere
+	w := new(bytes.Buffer)
+	GetText(o, w)
+	if s := fmt.Sprint(w); s != "HTML Fragment to compare against others below to test diffs" {
+		t.Errorf("incorrect text")
+	}
+}
+
 // Testing the search of a tag
 func TestFindTag(t *testing.T) {
 	d := ParseFile(f2)
@@ -109,6 +120,9 @@ func TestFindNodes(t *testing.T) {
 		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
 			0, "p", "",
 			[]html.Attribute{{"", "class", "not-found"}}}, false},
+		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
+			0, "p", "ns", // +0.9%
+			[]html.Attribute{{"", "class", "not-found"}}}, false},
 	}
 
 	for _, m := range tagsToFind {
@@ -124,7 +138,40 @@ func TestFindNodes(t *testing.T) {
 }
 
 // Testing nodes comparison
+// Using nil to include (+0.8%)
 func TestIncludeNode(t *testing.T) {
+	var n html.Node
+	n.Type = html.ElementNode
+	n.Data = "p"
+	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	if !Equal(IncludedNode(nil, &n), &n) {
+		t.Errorf("nil does not include any node")
+	}
+}
+
+// Using nil to include (+0.9%)
+func TestIncludedNodeTyped(t *testing.T) {
+	var n html.Node
+	n.Type = html.ElementNode
+	n.Data = "p"
+	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	if !Equal(IncludedNodeTyped(nil, &n, html.ErrorNode), &n) {
+		t.Errorf("nil does not include any node")
+	}
+}
+
+// Using nil to include (+0.8%)
+func TestIdenticalNilNodes(t *testing.T) {
+	var n html.Node
+	n.Type = html.ElementNode
+	n.Data = "p"
+	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	if !Equal(IdenticalNodes(nil, &n, html.ErrorNode), &n) {
+		t.Errorf("nil does not include any node")
+	}
+}
+
+func TestIncludeNodes(t *testing.T) {
 	fragments := []struct {
 		s     string
 		equal bool
