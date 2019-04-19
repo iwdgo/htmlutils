@@ -1,4 +1,4 @@
-module github.com/htmlutils
+module github.com/iwdgo/htmlutils
 
 go 1.12
 

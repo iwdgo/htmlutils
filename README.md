@@ -11,3 +11,8 @@ Trees and sub-trees can be compared.
 # Good to know
 
 Siblings must always have the same order or comparison fails.
+Order of attributes is irrelevant.
+
+# Testing
+
+Test coverage is 98.3% which is the maximum as testing file existence is unfeasible w/o panic.
