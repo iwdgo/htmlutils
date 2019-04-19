@@ -138,7 +138,7 @@ func PrintNodes(m, n *html.Node, t html.NodeType, d int) {
 func GetText(m *html.Node, b *bytes.Buffer) {
 	for o := m.FirstChild; o != nil; o = o.NextSibling {
 		if o.Type == html.TextNode {
-			fmt.Fprint(b, o.Data)
+			_, _ = fmt.Fprint(b, o.Data)
 		}
 		GetText(o, b)
 	}
