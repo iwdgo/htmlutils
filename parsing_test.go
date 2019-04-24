@@ -71,7 +71,7 @@ func TestPrintData(t *testing.T) {
 	tagToFind.Data = "p"
 	tagToFind.Attr = []html.Attribute{{"", "class", "ex2"}}
 	want := "p (Element) [{ class ex2}]"
-	if s := printData(&tagToFind); s != want {
+	if s := PrintData(&tagToFind); s != want {
 		t.Errorf("printData: got %s, want %s", s, want)
 	}
 }
@@ -94,7 +94,7 @@ func TestFindTag(t *testing.T) {
 	want := tagToFind + " (Element) [{ class fixed}]" // PrintData value
 	if n := FindTag(d, tagToFind, html.ElementNode); n == nil {
 		t.Errorf("<%s> not found in %s\n", tagToFind, f2)
-	} else if got := printData(n); got != want {
+	} else if got := PrintData(n); got != want {
 		t.Errorf("<%s> tag found is different: got %s, want %s\n", tagToFind, got, want)
 	}
 	tagToFind = "display"
@@ -126,12 +126,12 @@ func TestFindNodes(t *testing.T) {
 	}
 
 	for _, m := range tagsToFind {
-		want := printData(&m.n)
+		want := PrintData(&m.n)
 		if o := FindNode(ParseFile(f), m.n); o == nil && m.f { // Should be found
-			t.Errorf("<%s> not found in %s\n", printData(&m.n), f)
+			t.Errorf("<%s> not found in %s\n", PrintData(&m.n), f)
 		} else if o == nil && !m.f {
 			// Not found is expected
-		} else if got := printData(o); got != want {
+		} else if got := PrintData(o); got != want {
 			t.Errorf("tag found has differences: got %s, want %s\n", got, want)
 		}
 	}
@@ -211,12 +211,12 @@ func TestIncludeNodes(t *testing.T) {
 		}
 		if r := IncludedNode(original, n); r != nil && f.equal {
 			// if r := compareNodeRecursive(original, n); r != nil {
-			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, printData(r))
+			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, PrintData(r))
 			// exploreNode(r, "", html.ErrorNode)
 		} else if r == nil && !f.equal {
 			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, printData(r))
+			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		}
 	}
 }
@@ -272,12 +272,12 @@ func TestIncludeNodeTyped(t *testing.T) {
 		}
 		if r := IncludedNodeTyped(original, n, f.t); r != nil && f.equal {
 			// if r := compareNodeRecursive(original, n); r != nil {
-			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, printData(r))
+			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, PrintData(r))
 			// exploreNode(r, "", html.ErrorNode)
 		} else if r == nil && !f.equal {
 			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, printData(r))
+			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		}
 	}
 }
@@ -333,12 +333,12 @@ func TestIdenticalNodes(t *testing.T) {
 		}
 		if r := IdenticalNodes(original, n, f.t); r != nil && f.equal {
 			// if r := compareNodeRecursive(original, n); r != nil {
-			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, printData(r))
+			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, PrintData(r))
 			// exploreNode(r, "", html.ErrorNode)
 		} else if r == nil && !f.equal {
 			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, printData(r))
+			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		}
 	}
 }

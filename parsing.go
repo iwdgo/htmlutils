@@ -59,7 +59,7 @@ func ParseFile(f string) *html.Node {
 func ExploreNode(n *html.Node, s string, t html.NodeType) {
 	if n.Type == t || t == html.ErrorNode {
 		if n.Data == s || s == "" {
-			fmt.Printf(" %s", printData(n))
+			fmt.Printf(" %s", PrintData(n))
 		}
 	}
 	// Something will print
@@ -78,9 +78,9 @@ func ExploreNode(n *html.Node, s string, t html.NodeType) {
 // i.e. exploreNode(n, "", html.ErrorNode) prints nothing then both are equivalent.
 func PrintTags(n *html.Node, s string, tagOnly bool) {
 	if tagOnly && n.Type == html.ElementNode { // tag is true and only tags are dumped
-		fmt.Println(printData(n))
+		fmt.Println(PrintData(n))
 	} else if !tagOnly { // Otherwise, all nodes
-		fmt.Println(printData(n))
+		fmt.Println(PrintData(n))
 	}
 	if s != "" && n.Type == html.ElementNode && n.Data == s {
 		fmt.Printf("[%s] found. Stopping exploration\n", n.Data)
@@ -120,7 +120,7 @@ func indent(i int) (s string) {
 // html.ErrorNode (iota) displays every tag except the error node.
 func PrintNodes(m, n *html.Node, t html.NodeType, d int) {
 	if Equal(m, n) {
-		fmt.Printf("\ntag found: %s", printData(m))
+		fmt.Printf("\ntag found: %s", PrintData(m))
 	}
 	if m.FirstChild != nil {
 		fmt.Printf("\n%s", indent(d)) // Siblings on one line
@@ -128,7 +128,7 @@ func PrintNodes(m, n *html.Node, t html.NodeType, d int) {
 	d++
 	for o := m.FirstChild; o != nil; o = o.NextSibling {
 		if o.Type == t || t == html.ErrorNode {
-			fmt.Printf(" %s", printData(o))
+			fmt.Printf(" %s", PrintData(o))
 		}
 		PrintNodes(o, n, t, d)
 	}
@@ -186,7 +186,7 @@ func Equal(m, n *html.Node) bool {
 
 // printData returns a string with Node information (not its relationships)
 // nil will panic
-func printData(n *html.Node) string {
+func PrintData(n *html.Node) string {
 	ns := ""
 	if n.Namespace != "" {
 		ns = " ns:[" + n.Namespace + "]"

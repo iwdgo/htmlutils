@@ -16,16 +16,16 @@ func ExampleIncludedNode() {
 	}
 	m := FindNode(ParseFile(f1), toFind) // searching <table> in d1
 	if m == nil {
-		fmt.Printf("%s not found in %s \n", printData(&toFind), f1)
+		fmt.Printf("%s not found in %s \n", PrintData(&toFind), f1)
 	}
 
 	n := FindNode(ParseFile(f2), toFind) // searching <table> in d2
 	if n == nil {
-		fmt.Printf("%s not found in %s \n", printData(&toFind), f2)
+		fmt.Printf("%s not found in %s \n", PrintData(&toFind), f2)
 	}
 	// Is n included in m
 	if f := IncludedNode(n, m); f != nil {
-		fmt.Printf("nodes structures diverge from : %s\n", printData(f))
+		fmt.Printf("nodes structures diverge from : %s\n", PrintData(f))
 	}
 	// Output:
 }
