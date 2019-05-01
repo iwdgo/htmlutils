@@ -176,20 +176,31 @@ func TestIncludeNodes(t *testing.T) {
 		s     string
 		equal bool
 	}{
+		// Detected
+		// identical to itself
 		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`,
-			true, // identical to itself
-		},
+			true},
+		// missing letter in text
 		{`<p class="ex1">HTML Fragment to compare against <em>other below</em> to test <sub>diffs</sub></p>`,
-			false, // identical to itself
-		},
+			false},
 		// missing sub-node <sub>
-		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test diffs</p>`, false},
-		// additionnal sibling node <p class="ex2"
+		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test diffs</p>`,
+			false},
+		// Not detected
+		// additionnal sibling outside <p class="ex2">
 		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p><p class="ex2">outside</p>`,
 			true},
-		// additionnal sub-node <p class="ex2"
+		// additionnal sibling inside <p class="ex2">
 		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub><p class="ex2">inside</p></p>`,
 			true},
+		// TODO Missing closing tag
+		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub>`,
+			true,
+		},
+		// Missing ending closing tags
+		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs`,
+			true,
+		},
 	}
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, fragments[0].s)
@@ -217,6 +228,8 @@ func TestIncludeNodes(t *testing.T) {
 			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
 			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
+		} else {
+			// Nothing is printed because the difference is not detected
 		}
 	}
 }
