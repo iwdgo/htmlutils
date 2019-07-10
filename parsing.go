@@ -17,8 +17,10 @@ package parsing
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"golang.org/x/net/html"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -135,6 +137,7 @@ func PrintNodes(m, n *html.Node, t html.NodeType, d int) {
 }
 
 // GetText prints the text content of a tree structure like PrintNodes w/o any formatting
+// TODO Check usage of (* Tokenizer) Text equivalent in net/html package
 func GetText(m *html.Node, b *bytes.Buffer) {
 	for o := m.FirstChild; o != nil; o = o.NextSibling {
 		if o.Type == html.TextNode {
@@ -307,4 +310,48 @@ func IdenticalNodes(m, n *html.Node, t html.NodeType) *html.Node {
 		return nf
 	}
 	return nil
+}
+
+// textNodesCompare the text content of a node with a reference string.
+// nil is returned when identical. Otherwise an error message is returned.
+func textNodesCompare(n *html.Node, s string) error {
+	bg := new(bytes.Buffer)
+	GetText(n, bg)
+
+	bw := new(bytes.Buffer)
+	bw.WriteString(s)
+	n, _ = html.Parse(bw) // To remove html tags
+	GetText(n, bw)
+	if bytes.Compare(bg.Bytes(), bw.Bytes()) != 0 {
+		return errors.New(fmt.Sprintf("invalid message: got %s, want %s", bg, bw))
+	}
+	return nil
+}
+
+// IsTextTag checks the presence of a tag and its text value in a buffer.
+// An error message is returned if the tag is not found or if the text is not the expected one.
+func IsTextTag(b io.ReadCloser, t, s string) error {
+	d, err := html.Parse(b)
+	if err != nil {
+		return fmt.Errorf("parsing: %v", err)
+	}
+	n := FindTag(d, t, html.ElementNode)
+	if n == nil {
+		return fmt.Errorf("findtag: tag not found")
+	}
+	return textNodesCompare(n, s)
+}
+
+// IsTextNode checks the presence of a node and its text value in a buffer.
+// An error message is returned if the node is not found or if the text is not the expected one.
+func IsTextNode(b io.ReadCloser, ns *html.Node, s string) error {
+	d, err := html.Parse(b)
+	if err != nil {
+		return fmt.Errorf("parsing: %v", err)
+	}
+	n := FindNode(d, *ns)
+	if n == nil {
+		return fmt.Errorf("findnode: node %s not found.", ns.Data)
+	}
+	return textNodesCompare(n, s)
 }
