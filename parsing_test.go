@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"golang.org/x/net/html"
+	"log"
+	"net/http"
 	"testing"
 )
 
@@ -115,8 +117,8 @@ func TestFindNodes(t *testing.T) {
 			0, "table", "",
 			[]html.Attribute{{"", "class", "fixed"}}}, true},
 		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "p", "",
-			[]html.Attribute{{"", "class", "ex2"}}}, true},
+			0, "caption", "",
+			[]html.Attribute{}}, true},
 		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
 			0, "p", "",
 			[]html.Attribute{{"", "class", "not-found"}}}, false},
@@ -210,9 +212,9 @@ func TestIncludeNodes(t *testing.T) {
 		t.Errorf("%v while parsing %s", err, fragments[0].s)
 	} else {
 		// No Sibling in the document after parsing
-		// fmt.Printf("F %v\nL %v\nN %v\nP %v\n", original.FirstChild, original.LastChild, original.NextSibling, original.PrevSibling)
+		// log.Printf("F %v\nL %v\nN %v\nP %v\n", original.FirstChild, original.LastChild, original.NextSibling, original.PrevSibling)
 		ExploreNode(original, "", html.ErrorNode)
-		fmt.Println("---")
+		log.Println("---")
 	}
 	for i, f := range fragments {
 		fmt.Fprint(b, f.s)
@@ -227,7 +229,7 @@ func TestIncludeNodes(t *testing.T) {
 		} else if r == nil && !f.equal {
 			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
+			log.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		} else {
 			// Nothing is printed because the difference is not detected
 		}
@@ -275,7 +277,7 @@ func TestIncludeNodeTyped(t *testing.T) {
 	} else {
 		// No Sibling in the document after parsing
 		ExploreNode(original, "", original.Type)
-		fmt.Println("---")
+		log.Println("---")
 	}
 	for i, f := range fragments {
 		fmt.Fprint(b, f.s)
@@ -290,7 +292,7 @@ func TestIncludeNodeTyped(t *testing.T) {
 		} else if r == nil && !f.equal {
 			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
+			log.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		}
 	}
 }
@@ -336,7 +338,7 @@ func TestIdenticalNodes(t *testing.T) {
 	} else {
 		// No Sibling in the document after parsing
 		ExploreNode(original, "", original.Type)
-		fmt.Println("---")
+		log.Println("---")
 	}
 	for i, f := range fragments {
 		fmt.Fprint(b, f.s)
@@ -351,7 +353,53 @@ func TestIdenticalNodes(t *testing.T) {
 		} else if r == nil && !f.equal {
 			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			fmt.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
+			log.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		}
 	}
+}
+
+func TestIsTextTag(t *testing.T) {
+	resp, err := http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
+	if err != nil {
+		t.Error(err)
+	}
+	titles := []struct {
+		s string // want value
+		b bool   // expected result
+	}{
+		{"Cayley table of Z<sub>3</sub> o Z<sub>3</sub> algebra of order 9", true},
+		{"Wrong title on empty buffer", false},
+	}
+	tag := "caption"
+	for _, ref := range titles {
+		if err = IsTextTag(resp.Body, tag, ref.s); err != nil && ref.b {
+			t.Error(err)
+		}
+	}
+
+}
+
+func TestIsTextNode(t *testing.T) {
+	resp, err := http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
+	if err != nil {
+		t.Error(err)
+	}
+	titles := []struct {
+		s string // want value
+		b bool   // expected result
+	}{
+		{"Cayley table of Z<sub>3</sub> o Z<sub>3</sub> algebra of order 9", true},
+		{"Wrong title on empty buffer", false},
+	}
+	var n html.Node
+	n.Type = html.ElementNode
+	n.Data = "caption"
+	// TODO Add attributes
+	// n.Attr = []html.Attribute{{"", "class", "fixed"}}
+	for _, ref := range titles {
+		if err = IsTextNode(resp.Body, &n, ref.s); err != nil && ref.b {
+			t.Error(err)
+		}
+	}
+
 }
