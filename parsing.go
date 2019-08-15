@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"golang.org/x/net/html"
 	"io"
-	"log"
 	"os"
 	"strings"
 )
@@ -38,19 +37,18 @@ Problem is the order is sometimes relevant. So relaxing completely the order of 
 TODO iota (html.ErrorNode) seems difficult to produce and looks like the right default
 You can first check that no ErrorNode was created before comparing for instance
 */
-// ParseFile returns a *Node containing the parsed file
-// Func cannot be tested and maximum test coverage is 98.3%
-func ParseFile(f string) *html.Node {
+// ParseFile returns a *Node containing the parsed file or an error (file or parsing)
+func ParseFile(f string) (*html.Node, error) {
 	file, err := os.Open(f)
 	if err != nil {
-		log.Fatalln("opening file failed", err)
+		return nil, err
 	}
 	defer file.Close()
 	n, err := html.Parse(file)
 	if err != nil {
-		log.Fatalln("parsing failed:", err)
+		return nil, err
 	}
-	return n
+	return n, nil
 }
 
 // String-based search

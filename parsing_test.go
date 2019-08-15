@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/html"
 	"log"
 	"net/http"
+	"os"
 	"testing"
 )
 
@@ -61,9 +62,17 @@ func TestAreEqual(t *testing.T) {
 	if !Equal(&tag1, &tag2) {
 		t.Errorf("%v == %v are found different\n", tag1, tag2)
 	}
+	// Interverting attributes has not effect
 	tag1.Attr = []html.Attribute{tag1.Attr[1], tag1.Attr[0]}
 	if !Equal(&tag1, &tag2) {
 		t.Errorf("%v == %v are found different\n", tag1, tag2)
+	}
+	// Changing one value while keeping the number of attributes
+	a := tag1.Attr[1]
+	a.Val = "variable"
+	tag1.Attr = []html.Attribute{tag1.Attr[1], a}
+	if Equal(&tag1, &tag2) {
+		t.Errorf("%v != %v are found different\n", tag1, tag2)
 	}
 }
 
@@ -91,7 +100,7 @@ func TestGetText(t *testing.T) {
 
 // Testing the search of a tag
 func TestFindTag(t *testing.T) {
-	d := ParseFile(f2)
+	d, _ := ParseFile(f2)
 	tagToFind := "table"
 	want := tagToFind + " (Element) [{ class fixed}]" // PrintData value
 	if n := FindTag(d, tagToFind, html.ElementNode); n == nil {
@@ -129,7 +138,8 @@ func TestFindNodes(t *testing.T) {
 
 	for _, m := range tagsToFind {
 		want := PrintData(&m.n)
-		if o := FindNode(ParseFile(f), m.n); o == nil && m.f { // Should be found
+		p, _ := ParseFile(f)
+		if o := FindNode(p, m.n); o == nil && m.f { // Should be found
 			t.Errorf("<%s> not found in %s\n", PrintData(&m.n), f)
 		} else if o == nil && !m.f {
 			// Not found is expected
@@ -359,10 +369,6 @@ func TestIdenticalNodes(t *testing.T) {
 }
 
 func TestIsTextTag(t *testing.T) {
-	resp, err := http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
-	if err != nil {
-		t.Error(err)
-	}
 	titles := []struct {
 		s string // want value
 		b bool   // expected result
@@ -371,12 +377,29 @@ func TestIsTextTag(t *testing.T) {
 		{"Wrong title on empty buffer", false},
 	}
 	tag := "caption"
+
+	resp, err := http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
+	if err != nil {
+		t.Error(err)
+	}
+
 	for _, ref := range titles {
-		if err = IsTextTag(resp.Body, tag, ref.s); err != nil && ref.b {
+		if err = IsTextTag(resp.Body, tag, ref.s); err != nil && ref.b && err.Error() != "findtag: tag not found" {
 			t.Error(err)
+		} else if err == nil && !ref.b {
+			t.Error("titles are identical and should not")
 		}
 	}
 
+	resp, err = http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
+	if err != nil {
+		t.Error(err)
+	}
+	for _, ref := range titles[1:] {
+		if err = IsTextTag(resp.Body, tag, ref.s); err == nil && !ref.b {
+			t.Error("titles are identical and should not")
+		}
+	}
 }
 
 func TestIsTextNode(t *testing.T) {
@@ -402,4 +425,10 @@ func TestIsTextNode(t *testing.T) {
 		}
 	}
 
+}
+
+func TestParseFileErrorFile(t *testing.T) {
+	if _, err := ParseFile("doesnotexist"); !os.IsNotExist(err) {
+		t.Error(err)
+	}
 }
