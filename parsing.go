@@ -30,12 +30,11 @@ var nodeTypeNames = []string{"Error", "Text", "Document", "Element", "Comment", 
 /*
 HTML structure requires to locate the tag from which comparison starts and compare all tags until the comparison ends
 All Print and Search funcs are recursive. Every Sibling of the FirstChild is searched for the same value.
-Tests demonstrate usage of the library
+Tests and examples demonstrate usage of the library.
 
-TODO Siblings might not have the same order
-Problem is the order is sometimes relevant. So relaxing completely the order of the siblings might not be useful.
-TODO iota (html.ErrorNode) seems difficult to produce and looks like the right default
-You can first check that no ErrorNode was created before comparing for instance
+TODO Siblings might not have the same order and nodes seens as identical.
+ Order of siblings is sometimes relevant. So, relaxing completely the order of the siblings might not be right.
+TODO iota (html.ErrorNode) seems difficult to produce and seems like the right default.
 */
 // ParseFile returns a *Node containing the parsed file or an error (file or parsing)
 func ParseFile(f string) (*html.Node, error) {
@@ -92,7 +91,7 @@ func PrintTags(n *html.Node, s string, tagOnly bool) {
 }
 
 // FindTag finds the first occurrence of a tag name (i.e. whatever its attributes).
-// If ErrorNode is passed, any tag type will be searched
+// If ErrorNode is passed, any tag type will be searched.
 func FindTag(n *html.Node, s string, t html.NodeType) *html.Node {
 	if n.Data == s && (n.Type == t || t == html.ErrorNode) {
 		return n
@@ -103,6 +102,21 @@ func FindTag(n *html.Node, s string, t html.NodeType) *html.Node {
 		}
 	}
 	return nil
+}
+
+// FindTags finds all occurences of a tag name whatever their attributes.
+// If ErrorNode is passed, any tag type will be searched.
+func FindTags(n *html.Node, s string, t html.NodeType) (a []*html.Node) {
+	if n.Data == s && (n.Type == t || t == html.ErrorNode) {
+		a = append(a, n)
+		return
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		if f := FindTags(c, s, t); f != nil {
+			a = append(a, f...)
+		}
+	}
+	return
 }
 
 // Search using Node
@@ -155,7 +169,7 @@ func findAttr(a html.Attribute, l []html.Attribute) bool {
 	return false
 }
 
-// attrEqual return true if list of attributes are equal whatever their order
+// attrEqual returns true if list of attributes are equal whatever their order.
 func attrEqual(m, n *html.Node) bool {
 	if len(m.Attr) == 0 && len(n.Attr) == 0 {
 		return true
@@ -166,15 +180,29 @@ func attrEqual(m, n *html.Node) bool {
 		identicalAttr = identicalAttr && findAttr(m.Attr[i], n.Attr) // m.Attr[i] == n.Attr[i]
 		i++
 	}
-	// i was incremented when one attribute was found and must have the length of each array
+	// i was incremented for each attribute found. It must have the length of each array
 	if identicalAttr && i == len(m.Attr) && i == len(n.Attr) {
 		return true
 	}
 	return false
 }
 
+// AttrIncluded returns true if list of attributes of n is included in reference node m whatever their order.
+func AttrIncluded(m, n *html.Node) bool {
+	if len(m.Attr) == 0 && len(n.Attr) == 0 {
+		return true
+	}
+	includedAttr := true
+	i := 0
+	for includedAttr && i < len(m.Attr) && i < len(n.Attr) {
+		includedAttr = includedAttr && findAttr(n.Attr[i], m.Attr) // m.Attr[i] == n.Attr[i]
+		i++
+	}
+	return includedAttr
+}
+
 // Equal returns true if all fields of nodes m and n are equal except pointers
-// reflect.DeepEqual(tag1, tag2) is unusable as pointers are checked too
+// reflect.DeepEqual(tag1, tag2) is unusable as pointers are checked too.
 func Equal(m, n *html.Node) bool {
 	// This test is something like reflect.TypeOf(m) == reflect.TypeOf(n)
 	if m == nil && n == nil { // Passing untyped value panics otherwise
@@ -218,7 +246,7 @@ func FindNode(m *html.Node, n html.Node) *html.Node {
 
 // IncludeNode checks if n is included in m.
 // Included means that the subtree is identical to m including order of siblings.
-// If it is, nil is returned. Otherwise, the tag from which trees diverge is returned.
+// If it is identical, nil is returned. Otherwise, the tag from which trees diverge is returned.
 // If m has more tags than n, nil is returned as the search stops when one subtree exploration is exhausted.
 func IncludedNode(m, n *html.Node) *html.Node {
 	if !Equal(m, n) {
@@ -234,7 +262,7 @@ func IncludedNode(m, n *html.Node) *html.Node {
 		// and comparing to the other tree in the same order
 		if cn := IncludedNode(c, nf); cn != nil { // Some diff found - printing non-nil
 			//fmt.Printf("cn (where different):%s\t", printData(cn))
-			/* TODO Test is useless
+			/* TODO Test on cn seems useless
 			if c != nil {
 				fmt.Printf("m child:%s\t", printData(c))
 			}
@@ -258,7 +286,8 @@ func IncludedNodeTyped(m, n *html.Node, t html.NodeType) *html.Node {
 		// Returning the eventual non-nil value
 		if m == nil && n != nil {
 			return n
-		} else if n == nil && m != nil {
+		}
+		if n == nil && m != nil {
 			return m
 		}
 		if m.Type == t && n.Type == t {
@@ -321,7 +350,7 @@ func textNodesCompare(n *html.Node, s string) error {
 	n, _ = html.Parse(bw) // To remove html tags
 	GetText(n, bw)
 	if bytes.Compare(bg.Bytes(), bw.Bytes()) != 0 {
-		return errors.New(fmt.Sprintf("invalid message: got %s, want %s", bg, bw))
+		return errors.New(fmt.Sprintf("texts differ: got %s, want %s", bg, bw))
 	}
 	return nil
 }
@@ -335,7 +364,7 @@ func IsTextTag(b io.ReadCloser, t, s string) error {
 	}
 	n := FindTag(d, t, html.ElementNode)
 	if n == nil {
-		return fmt.Errorf("findtag: tag not found")
+		return fmt.Errorf("findtag: tag %s not found", t)
 	}
 	return textNodesCompare(n, s)
 }

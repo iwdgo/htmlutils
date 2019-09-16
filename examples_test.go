@@ -9,7 +9,7 @@ import (
 
 // ExampleIncludeNode is using the provided files to demonstrate use
 func ExampleIncludedNode() {
-	// f1 est une partie de f2
+	// f1 is the main table tag included in f2
 	toFind := html.Node{nil, nil, nil, nil, nil, html.ElementNode,
 		0, "table", "",
 		[]html.Attribute{{"", "class", "fixed"}},
@@ -36,10 +36,13 @@ func ExampleIncludedNode() {
 // They were prefixed by "Test" (including signature) to avoid failures. No test occurs.
 // They demonstrate the output possibilities.
 
-const HTMLf = `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
+const (
+	HTMLf  = `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
+	HTMLf2 = `<p class="ex1" style="visibility: hidden;">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
+)
 
 // Printing the node tree
-func ExampleExploreNodeTags() {
+func ExampleExploreNode_Tags() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, err := html.Parse(b) // Only place where err of Parse is checked
@@ -51,7 +54,8 @@ func ExampleExploreNodeTags() {
 	//  others below (Text) to test  (Text)
 	//  diffs (Text)
 }
-func ExampleExploreNodeAll() {
+
+func ExampleExploreNode_All() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
@@ -64,7 +68,8 @@ func ExampleExploreNodeAll() {
 	//  others below (Text) to test  (Text) sub (Element)
 	//  diffs (Text)
 }
-func ExamplePrintTagswoSearch() {
+
+func ExamplePrintTags_WoSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
@@ -99,7 +104,7 @@ func ExamplePrintTagswSearch() {
 	//sub (Element)
 }
 
-func ExamplePrintNodeswoSearch() {
+func ExamplePrintNodes_WoSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
@@ -112,7 +117,7 @@ func ExamplePrintNodeswoSearch() {
 	//.... diffs (Text)
 }
 
-func ExamplePrintNodeswSearch() {
+func ExamplePrintNodes_WSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)

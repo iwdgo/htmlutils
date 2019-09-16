@@ -2,11 +2,13 @@ package parsing
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"golang.org/x/net/html"
+	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -14,6 +16,13 @@ const (
 	f1 = "want_Test1.html"
 	f2 = "want_Test2.html"
 )
+
+var parsingErr = []error{
+	nil,
+	errors.New("not found"),
+	errors.New("not equal"),
+	errors.New("attributes are differing"),
+}
 
 func TestAreEqual(t *testing.T) {
 	var tag1, tag2 html.Node
@@ -115,7 +124,7 @@ func TestFindTag(t *testing.T) {
 }
 
 // Testing the the search of a node based on values which are not pointers, i.e. the tree of the node is not taken into
-// account
+// account. Exact match between nodes is expected.
 func TestFindNodes(t *testing.T) {
 	f := f2
 	tagsToFind := []struct {
@@ -133,7 +142,7 @@ func TestFindNodes(t *testing.T) {
 			[]html.Attribute{{"", "class", "not-found"}}}, false},
 		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
 			0, "p", "ns", // +0.9%
-			[]html.Attribute{{"", "class", "not-found"}}}, false},
+			[]html.Attribute{{"", "class", "ex1"}}}, false},
 	}
 
 	for _, m := range tagsToFind {
@@ -205,7 +214,7 @@ func TestIncludeNodes(t *testing.T) {
 		// additionnal sibling inside <p class="ex2">
 		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub><p class="ex2">inside</p></p>`,
 			true},
-		// TODO Missing closing tag
+		// missing closing tag as accepted in HTML5
 		{`<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub>`,
 			true,
 		},
@@ -234,12 +243,12 @@ func TestIncludeNodes(t *testing.T) {
 		}
 		if r := IncludedNode(original, n); r != nil && f.equal {
 			// if r := compareNodeRecursive(original, n); r != nil {
-			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, PrintData(r))
+			t.Errorf("--- FAIL(%d): %s differs from [%s]", i, f.s, PrintData(r))
 			// exploreNode(r, "", html.ErrorNode)
 		} else if r == nil && !f.equal {
-			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
+			t.Errorf("--- FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			log.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
+			log.Printf("=== PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		} else {
 			// Nothing is printed because the difference is not detected
 		}
@@ -354,16 +363,16 @@ func TestIdenticalNodes(t *testing.T) {
 		fmt.Fprint(b, f.s)
 		n, err := html.Parse(b)
 		if err != nil {
-			t.Errorf("---FAIL %d: %v while parsing %s", i, err, f.s)
+			t.Errorf("--- FAIL %d: %v while parsing %s", i, err, f.s)
 		}
 		if r := IdenticalNodes(original, n, f.t); r != nil && f.equal {
 			// if r := compareNodeRecursive(original, n); r != nil {
-			t.Errorf("---FAIL(%d): %s differs from [%s]", i, f.s, PrintData(r))
+			t.Errorf("--- FAIL(%d): %s differs from [%s]", i, f.s, PrintData(r))
 			// exploreNode(r, "", html.ErrorNode)
 		} else if r == nil && !f.equal {
-			t.Errorf("---FAIL(%d): no difference found with %s", i, f.s)
+			t.Errorf("--- FAIL(%d): no difference found with %s", i, f.s)
 		} else if r != nil && !f.equal {
-			log.Printf("---PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
+			log.Printf("=== PASS(%d): %s differs from: %s\n", i, f.s, PrintData(r))
 		}
 	}
 }
@@ -377,36 +386,37 @@ func TestIsTextTag(t *testing.T) {
 		{"Wrong title on empty buffer", false},
 	}
 	tag := "caption"
-
-	resp, err := http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
+	f, err := ioutil.ReadFile(f2)
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
-
+	b := new(bytes.Buffer)
 	for _, ref := range titles {
-		if err = IsTextTag(resp.Body, tag, ref.s); err != nil && ref.b && err.Error() != "findtag: tag not found" {
+		b.Reset()
+		b.Write(f)
+		err = IsTextTag(ioutil.NopCloser(b), tag, ref.s)
+		if err == nil && ref.b {
+			// success as expected
+		} else if err != nil && !ref.b && strings.Contains(err.Error(), "not found") {
 			t.Error(err)
-		} else if err == nil && !ref.b {
-			t.Error("titles are identical and should not")
+		} else if err != nil && !ref.b && strings.Contains(err.Error(), "texts differ") {
+			// failed as expected
+		} else {
+			t.Error("unknown error:", err)
 		}
 	}
 
-	resp, err = http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
-	if err != nil {
-		t.Error(err)
-	}
-	for _, ref := range titles[1:] {
-		if err = IsTextTag(resp.Body, tag, ref.s); err == nil && !ref.b {
-			t.Error("titles are identical and should not")
-		}
+	err = IsTextTag(ioutil.NopCloser(b), tag, titles[0].s)
+	if err == nil {
+		t.Error("titles are identical and should not")
+	} else if strings.Contains(err.Error(), "not found") {
+		// Not found as expected as b is empty
+	} else {
+		t.Errorf("got %v, want not found type error", err)
 	}
 }
 
 func TestIsTextNode(t *testing.T) {
-	resp, err := http.Get("https://sitecloud-1266.appspot.com/displaytable?algebra=Z3%20o%20Z3")
-	if err != nil {
-		t.Error(err)
-	}
 	titles := []struct {
 		s string // want value
 		b bool   // expected result
@@ -417,14 +427,56 @@ func TestIsTextNode(t *testing.T) {
 	var n html.Node
 	n.Type = html.ElementNode
 	n.Data = "caption"
-	// TODO Add attributes
-	// n.Attr = []html.Attribute{{"", "class", "fixed"}}
+	// n.Attr = nil // empty array is invalid
+	f, err := ioutil.ReadFile(f2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := new(bytes.Buffer)
+
+	/* DEBUG
+	dt, err := html.Parse(b)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(FindTag(dt, tag, html.ElementNode))
+	*/
+
 	for _, ref := range titles {
-		if err = IsTextNode(resp.Body, &n, ref.s); err != nil && ref.b {
+		b.Reset()
+		b.Write(f)
+		err = IsTextNode(ioutil.NopCloser(b), &n, ref.s)
+		if err == nil && ref.b {
+			// success as expected
+		} else if err != nil && !ref.b && strings.Contains(err.Error(), "not found") {
 			t.Error(err)
+		} else if err != nil && !ref.b && strings.Contains(err.Error(), "texts differ") {
+			// failed as expected
+		} else {
+			t.Error("unknown error:", err)
 		}
 	}
 
+	// On empty buffer
+	err = IsTextNode(ioutil.NopCloser(b), &n, "does-not-matter")
+	if err == nil {
+		t.Fatal("node was unexpectedly found")
+	}
+	if want := "got findnode: node caption not found."; strings.Contains(err.Error(), want) {
+		t.Errorf("error message: got %v, want %v", err, want)
+	}
+
+	// Node does not match on attributes
+	b.Reset()
+	b.Write(f)
+	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	err = IsTextNode(ioutil.NopCloser(b), &n, "does-not-matter")
+	if err == nil {
+		t.Fatal("node was unexpectedly found")
+	}
+	if want := "got findnode: node caption not found."; strings.Contains(err.Error(), want) {
+		t.Errorf("error message: got %v, want %v", err, want)
+	}
 }
 
 func TestParseFileErrorFile(t *testing.T) {
@@ -432,3 +484,113 @@ func TestParseFileErrorFile(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+// Testing the the search of a node based on values which are not pointers,
+// i.e. the tree of the node is not taken into account.
+func TestAttrIncluded(t *testing.T) {
+	tagsToFind := []struct {
+		n html.Node
+		f error
+	}{
+		// On attribute missing
+		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
+			0, "p", "",
+			[]html.Attribute{{"", "class", "ex1"}}}, nil},
+		// No attribute
+		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
+			0, "p", "",
+			[]html.Attribute{}}, nil},
+		// Wrong namespace
+		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
+			0, "p", "ns",
+			[]html.Attribute{{"", "class", "ex1"}}}, parsingErr[2]},
+		// Wrong value of attribute
+		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
+			0, "p", "",
+			[]html.Attribute{{"", "class", "not-found"}}}, parsingErr[3]},
+	}
+
+	b := new(bytes.Buffer)
+	for _, m := range tagsToFind {
+		want := PrintData(&m.n)
+		fmt.Fprint(b, HTMLf2)
+		p, err := html.Parse(b) // Any parsing error would occurred elsewhere
+		if err != nil {
+			t.Error(err)
+		}
+		o := FindTag(p, m.n.Data, html.ElementNode)
+		switch m.f {
+		case nil:
+			if o == nil {
+				t.Errorf("<%s> not found in %s\n", PrintData(&m.n), want)
+			}
+			continue
+		case parsingErr[1]:
+			if o == nil {
+				// Not found as expected
+			} else {
+				t.Errorf("<%s> found as unexpected in %s\n", PrintData(&m.n), want)
+			}
+			continue
+		case parsingErr[2]:
+			if m.n.Namespace != o.Namespace {
+				// Different as expected
+			} else {
+				t.Errorf("<%s> has invalid namespace in %s\n", PrintData(&m.n), want)
+			}
+			continue
+		}
+
+		inc := AttrIncluded(&m.n, o)
+		if inc && m.f == parsingErr[3] {
+			t.Errorf("<%s> attributes are included as unexpected in %s\n", PrintData(&m.n), want)
+		}
+		if !inc && m.f == nil {
+			t.Errorf("<%s> attributes included as unexpected in %s\n", PrintData(&m.n), want)
+		}
+		b.Reset()
+	}
+}
+
+func TestAttrIncludedEmpty(t *testing.T) {
+	var m, n html.Node
+	if !AttrIncluded(&m, &n) {
+		t.Errorf("attrincluded: unexpected failure when no attributes are available")
+	}
+}
+
+func TestFindTags(t *testing.T) {
+	const tablesize = 81
+	m, _ := ParseFile(f1)
+	na := FindTags(m, "button", html.ElementNode)
+	if len(na) != tablesize {
+		t.Errorf("got %d, want %d", len(na), tablesize)
+	}
+
+	var p html.Node
+	p.Type = html.ElementNode
+	p.Data = "caption"
+	p.Attr = []html.Attribute{{"", "title", "Neutral"}}
+	i := 0
+	for _, n := range na {
+		if AttrIncluded(n, &p) {
+			i++
+		}
+	}
+	const neutral = 9
+	if i != neutral {
+		t.Errorf("attributes: got %d, want %d", i, neutral)
+	}
+}
+
+/*
+TODO Reaching 100% coverage remains elusive as getting an error from html.Parse is not obvious.
+func TestParseError(t *testing.T) {
+	b := new(bytes.Buffer)
+	b.WriteRune('\x00')
+	if _, err := html.Parse(b); err != nil {
+		t.Error(err)
+	}
+}
+
+*/
