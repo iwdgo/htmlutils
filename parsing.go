@@ -17,7 +17,6 @@ package parsing
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"golang.org/x/net/html"
 	"io"
@@ -27,15 +26,10 @@ import (
 
 var nodeTypeNames = []string{"Error", "Text", "Document", "Element", "Comment", "DocType"}
 
-/*
-HTML structure requires to locate the tag from which comparison starts and compare all tags until the comparison ends
-All Print and Search funcs are recursive. Every Sibling of the FirstChild is searched for the same value.
-Tests and examples demonstrate usage of the library.
+// All search and print are recursive functions.
+// TODO Siblings might not have the same order and nodes would be viewed as identical.
+//  Order of siblings is sometimes relevant. So, relaxing completely the order of the siblings might not be right.
 
-TODO Siblings might not have the same order and nodes seens as identical.
- Order of siblings is sometimes relevant. So, relaxing completely the order of the siblings might not be right.
-TODO iota (html.ErrorNode) seems difficult to produce and seems like the right default.
-*/
 // ParseFile returns a *Node containing the parsed file or an error (file or parsing)
 func ParseFile(f string) (*html.Node, error) {
 	file, err := os.Open(f)
@@ -104,7 +98,7 @@ func FindTag(n *html.Node, s string, t html.NodeType) *html.Node {
 	return nil
 }
 
-// FindTags finds all occurences of a tag name whatever their attributes.
+// FindTags finds all occurrences of a tag name whatever their attributes.
 // If ErrorNode is passed, any tag type will be searched.
 func FindTags(n *html.Node, s string, t html.NodeType) (a []*html.Node) {
 	if n.Data == s && (n.Type == t || t == html.ErrorNode) {
@@ -213,7 +207,7 @@ func Equal(m, n *html.Node) bool {
 	return m.Type == n.Type && m.Data == n.Data && attrEqual(m, n) && m.Namespace == n.Namespace
 }
 
-// printData returns a string with Node information (not its relationships)
+// PrintData returns a string with Node information (not its relationships)
 // nil will panic
 func PrintData(n *html.Node) string {
 	ns := ""
@@ -244,7 +238,7 @@ func FindNode(m *html.Node, n html.Node) *html.Node {
 
 // Tree handling
 
-// IncludeNode checks if n is included in m.
+// IncludedNode checks if n is included in m.
 // Included means that the subtree is identical to m including order of siblings.
 // If it is identical, nil is returned. Otherwise, the tag from which trees diverge is returned.
 // If m has more tags than n, nil is returned as the search stops when one subtree exploration is exhausted.
@@ -350,7 +344,7 @@ func textNodesCompare(n *html.Node, s string) error {
 	n, _ = html.Parse(bw) // To remove html tags
 	GetText(n, bw)
 	if bytes.Compare(bg.Bytes(), bw.Bytes()) != 0 {
-		return errors.New(fmt.Sprintf("texts differ: got %s, want %s", bg, bw))
+		return fmt.Errorf("texts differ: got %s, want %s", bg, bw)
 	}
 	return nil
 }
