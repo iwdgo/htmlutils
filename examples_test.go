@@ -7,7 +7,12 @@ import (
 	"log"
 )
 
-// ExampleIncludeNode is using the provided files to demonstrate use
+const (
+	HTMLf  = `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
+	HTMLf2 = `<p class="ex1" style="visibility: hidden;">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
+)
+
+// ExampleIncludeNode is using the test files to demonstrate usage.
 func ExampleIncludedNode() {
 	// f1 is the main table tag included in f2
 	toFind := html.Node{nil, nil, nil, nil, nil, html.ElementNode,
@@ -32,16 +37,7 @@ func ExampleIncludedNode() {
 	// Output:
 }
 
-// Examples below cannot be tested as multiple lines output fails (https://github.com/golang/go/issues/26460).
-// They were prefixed by "Test" (including signature) to avoid failures. No test occurs.
-// They demonstrate the output possibilities.
-
-const (
-	HTMLf  = `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
-	HTMLf2 = `<p class="ex1" style="visibility: hidden;">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
-)
-
-// Printing the node tree
+// ExampleExploreNode_Tags only prints text.
 func ExampleExploreNode_Tags() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
@@ -55,6 +51,7 @@ func ExampleExploreNode_Tags() {
 	//  diffs (Text)
 }
 
+// ExampleExploreNode_All prints the complete node tree.
 func ExampleExploreNode_All() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
@@ -69,6 +66,7 @@ func ExampleExploreNode_All() {
 	//  diffs (Text)
 }
 
+// ExamplePrintTags_WoSearch is not using the search part.
 func ExamplePrintTags_WoSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
@@ -88,8 +86,8 @@ func ExamplePrintTags_WoSearch() {
 	//diffs (Text)
 }
 
-// Same as before but only tags stopping at a searched tag
-func ExamplePrintTagswSearch() {
+// ExamplePrintTags_wSearch is the previous example stopping at a searched tag
+func ExamplePrintTags_wSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)    // err ignored as failure is detected before
@@ -104,6 +102,7 @@ func ExamplePrintTagswSearch() {
 	//sub (Element)
 }
 
+// ExamplePrintNodes_WoSearch prints all nodes without using search.
 func ExamplePrintNodes_WoSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
@@ -117,6 +116,7 @@ func ExamplePrintNodes_WoSearch() {
 	//.... diffs (Text)
 }
 
+// ExamplePrintNodes_WoSearch is the previous example stopping at a search.
 func ExamplePrintNodes_WSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)

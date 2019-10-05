@@ -583,13 +583,14 @@ func TestFindTags(t *testing.T) {
 	}
 }
 
+// TODO Reaching 100% coverage requires to fail buffer reading which is the only error returned by .Parse()
+// No logic error on HTML tags can return an error.
 /*
-TODO Reaching 100% coverage remains elusive as getting an error from html.Parse is not obvious.
 func TestParseError(t *testing.T) {
 	b := new(bytes.Buffer)
-	b.WriteRune('\x00')
-	if _, err := html.Parse(b); err != nil {
-		t.Error(err)
+	// Fill the buffer.
+	if _, err := html.Parse(b); err == nil {
+		t.Error("expected to fail")
 	}
 }
 
