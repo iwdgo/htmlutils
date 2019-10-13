@@ -1,14 +1,17 @@
 /* Package parsing provides basic search and comparison of HTML documents.
 To limit storage of references, it uses the net/html package and its Node type to structure HTML.
+
 Search a tag in a Node with options
  - searching a tag based on its name whatever attributes where its type is optional
  - searching a tag based on its non-pointer values: type, name, attribute and namespace
  - comparing tags including list of attributes where order is irrelevant
  - comparing Node structures with an optional type
+
 Three ways to print a node tree
  - select type of node and a the node value where to stop.
  - select type of nodes or none.
  - complete with indentation.
+
 Good to know
  - a non-matching closed tag is one element.
  - a non-closed tag is closed by the following opening tag.

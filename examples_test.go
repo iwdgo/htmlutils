@@ -38,7 +38,7 @@ func ExampleIncludedNode() {
 }
 
 // ExampleExploreNode_Tags only prints text.
-func ExampleExploreNode_Tags() {
+func ExampleExploreNode_tags() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, err := html.Parse(b) // Only place where err of Parse is checked
@@ -52,7 +52,7 @@ func ExampleExploreNode_Tags() {
 }
 
 // ExampleExploreNode_All prints the complete node tree.
-func ExampleExploreNode_All() {
+func ExampleExploreNode_all() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
@@ -67,7 +67,7 @@ func ExampleExploreNode_All() {
 }
 
 // ExamplePrintTags_WoSearch is not using the search part.
-func ExamplePrintTags_WoSearch() {
+func ExamplePrintTags_woSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
@@ -103,7 +103,7 @@ func ExamplePrintTags_wSearch() {
 }
 
 // ExamplePrintNodes_WoSearch prints all nodes without using search.
-func ExamplePrintNodes_WoSearch() {
+func ExamplePrintNodes_woSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
@@ -117,7 +117,7 @@ func ExamplePrintNodes_WoSearch() {
 }
 
 // ExamplePrintNodes_WoSearch is the previous example stopping at a search.
-func ExamplePrintNodes_WSearch() {
+func ExamplePrintNodes_wSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
