@@ -15,9 +15,9 @@ const (
 // ExampleIncludeNode is using the test files to demonstrate usage.
 func ExampleIncludedNode() {
 	// f1 is the main table tag included in f2
-	toFind := html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-		0, "table", "",
-		[]html.Attribute{{"", "class", "fixed"}},
+	toFind := html.Node{Type: html.ElementNode,
+		Data: "table",
+		Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "fixed"}},
 	}
 	pm, _ := ParseFile(f1)
 	m := FindNode(pm, toFind) // searching <table> in d1
@@ -125,7 +125,7 @@ func ExamplePrintNodes_wSearch() {
 	var tagToFind html.Node
 	tagToFind.Type = html.ElementNode
 	tagToFind.Data = "p"
-	tagToFind.Attr = []html.Attribute{{"", "class", "ex1"}}
+	tagToFind.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex1"}}
 
 	PrintNodes(o, &tagToFind, html.ErrorNode, 0)
 	// Output: html (Element)

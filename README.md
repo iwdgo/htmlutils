@@ -4,6 +4,7 @@
 
 [![Build Status](https://travis-ci.com/iWdGo/htmlutils.svg?branch=master)](https://travis-ci.com/iWdGo/htmlutils)
 [![Build Status](https://api.cirrus-ci.com/github/iWdGo/htmlutils.svg)](https://cirrus-ci.com/github/iWdGo/htmlutils)
+[![Build status](https://ci.appveyor.com/api/projects/status/v6ce70t0jmqgehpw?svg=true)](https://ci.appveyor.com/project/iWdGo/htmlutils)
 
 # Exploring html.Node trees
 

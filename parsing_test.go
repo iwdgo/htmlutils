@@ -52,7 +52,7 @@ func TestAreEqual(t *testing.T) {
 		t.Errorf("%v != %v are found equal\n", tag1, tag2)
 	}
 	tag1.Namespace = tag2.Namespace
-	tag2.Attr = []html.Attribute{{"", "class", "fixed"}}
+	tag2.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "fixed"}}
 	if Equal(&tag1, &tag2) {
 		t.Errorf("%v != %v are found equal\n", tag1, tag2)
 	}
@@ -62,7 +62,7 @@ func TestAreEqual(t *testing.T) {
 		t.Errorf("%v == %v are found different\n", tag1, tag2)
 	}
 	// .Attr[1] != .Attr[1]
-	tag2.Attr = append(tag1.Attr, html.Attribute{"", "style", "h2"})
+	tag2.Attr = append(tag1.Attr, html.Attribute{Namespace: "", Key: "style", Val: "h2"})
 	if Equal(&tag1, &tag2) {
 		t.Errorf("%v != %v are found equal\n", tag1, tag2)
 	}
@@ -89,7 +89,7 @@ func TestPrintData(t *testing.T) {
 	var tagToFind html.Node
 	tagToFind.Type = html.ElementNode
 	tagToFind.Data = "p"
-	tagToFind.Attr = []html.Attribute{{"", "class", "ex2"}}
+	tagToFind.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex2"}}
 	want := "p (Element) [{ class ex2}]"
 	if s := PrintData(&tagToFind); s != want {
 		t.Errorf("printData: got %s, want %s", s, want)
@@ -131,18 +131,13 @@ func TestFindNodes(t *testing.T) {
 		n html.Node
 		f bool
 	}{
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "table", "",
-			[]html.Attribute{{"", "class", "fixed"}}}, true},
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "caption", "",
-			[]html.Attribute{}}, true},
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "p", "",
-			[]html.Attribute{{"", "class", "not-found"}}}, false},
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "p", "ns", // +0.9%
-			[]html.Attribute{{"", "class", "ex1"}}}, false},
+		{html.Node{Type: html.ElementNode, Data: "table",
+			Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "fixed"}}}, true},
+		{html.Node{Type: html.ElementNode, Data: "caption"}, true},
+		{html.Node{Type: html.ElementNode, Data: "p",
+			Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "not-found"}}}, false},
+		{html.Node{Type: html.ElementNode, Data: "p", Namespace: "ns", // +0.9%
+			Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "ex1"}}}, false},
 	}
 
 	for _, m := range tagsToFind {
@@ -164,7 +159,7 @@ func TestIncludeNode(t *testing.T) {
 	var n html.Node
 	n.Type = html.ElementNode
 	n.Data = "p"
-	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	n.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex2"}}
 	if !Equal(IncludedNode(nil, &n), &n) {
 		t.Errorf("nil does not include any node")
 	}
@@ -175,7 +170,7 @@ func TestIncludedNodeTyped(t *testing.T) {
 	var n html.Node
 	n.Type = html.ElementNode
 	n.Data = "p"
-	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	n.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex2"}}
 	if !Equal(IncludedNodeTyped(nil, &n, html.ErrorNode), &n) {
 		t.Errorf("nil does not include any node")
 	}
@@ -186,7 +181,7 @@ func TestIdenticalNilNodes(t *testing.T) {
 	var n html.Node
 	n.Type = html.ElementNode
 	n.Data = "p"
-	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	n.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex2"}}
 	if !Equal(IdenticalNodes(nil, &n, html.ErrorNode), &n) {
 		t.Errorf("nil does not include any node")
 	}
@@ -469,7 +464,7 @@ func TestIsTextNode(t *testing.T) {
 	// Node does not match on attributes
 	b.Reset()
 	b.Write(f)
-	n.Attr = []html.Attribute{{"", "class", "ex2"}}
+	n.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex2"}}
 	err = IsTextNode(ioutil.NopCloser(b), &n, "does-not-matter")
 	if err == nil {
 		t.Fatal("node was unexpectedly found")
@@ -493,21 +488,16 @@ func TestAttrIncluded(t *testing.T) {
 		f error
 	}{
 		// On attribute missing
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "p", "",
-			[]html.Attribute{{"", "class", "ex1"}}}, nil},
+		{html.Node{Type: html.ElementNode, Data: "p",
+			Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "ex1"}}}, nil},
 		// No attribute
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "p", "",
-			[]html.Attribute{}}, nil},
+		{html.Node{Type: html.ElementNode, Data: "p"}, nil},
 		// Wrong namespace
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "p", "ns",
-			[]html.Attribute{{"", "class", "ex1"}}}, parsingErr[2]},
+		{html.Node{Type: html.ElementNode, Data: "p", Namespace: "ns",
+			Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "ex1"}}}, parsingErr[2]},
 		// Wrong value of attribute
-		{html.Node{nil, nil, nil, nil, nil, html.ElementNode,
-			0, "p", "",
-			[]html.Attribute{{"", "class", "not-found"}}}, parsingErr[3]},
+		{html.Node{Type: html.ElementNode, Data: "p",
+			Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "not-found"}}}, parsingErr[3]},
 	}
 
 	b := new(bytes.Buffer)
@@ -570,7 +560,7 @@ func TestFindTags(t *testing.T) {
 	var p html.Node
 	p.Type = html.ElementNode
 	p.Data = "caption"
-	p.Attr = []html.Attribute{{"", "title", "Neutral"}}
+	p.Attr = []html.Attribute{{Namespace: "", Key: "title", Val: "Neutral"}}
 	i := 0
 	for _, n := range na {
 		if AttrIncluded(n, &p) {
