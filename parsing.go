@@ -1,4 +1,4 @@
-/* Package parsing provides basic search and comparison of HTML documents.
+/*Package parsing provides basic search and comparison of HTML documents.
 To limit storage of references, it uses the net/html package and its Node type to structure HTML.
 
 Search a tag in a Node with options
