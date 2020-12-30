@@ -1,4 +1,4 @@
-[![GoDoc](https://godoc.org/github.com/iWdGo/htmlutils?status.svg)](https://godoc.org/github.com/iWdGo/htmlutils)
+[![Go Reference](https://pkg.go.dev/badge/github.com/iwdgo/htmlutils.svg)](https://pkg.go.dev/github.com/iwdgo/htmlutils)
 [![Go Report Card](https://goreportcard.com/badge/github.com/iwdgo/htmlutils)](https://goreportcard.com/report/github.com/iwdgo/htmlutils)
 [![codecov](https://codecov.io/gh/iWdGo/htmlutils/branch/master/graph/badge.svg)](https://codecov.io/gh/iWdGo/htmlutils)
 
@@ -12,8 +12,8 @@
 html.Node trees as parsed using [golang.org/x/net/html](https://godoc.org/golang.org/x/net/html).
 
 The module provides basic functionality to compare HTML tags or html.Node and their trees.
-The search of an HTML tag using a *node.HTML type is executed while ignoring pointers.
-The first match is always returned but you can still count `<button>` tags for instance.
+The search of an HTML tag using a *node.HTML type ignores pointers.
+It always returns the first match. By ignoring some properties, tags `<button>` are easy to count.
 Text value of a tag (title, error message,...) can be checked.
 
 # Good to know
@@ -26,4 +26,4 @@ Order of attributes is treated as irrelevant.
 
 # How to start
 
-Detailed documentation is on [Go doc](https://godoc.org/github.com/iWdGo/htmlutils) where examples are provided.
+Detailed [documentation](https://pkg.go.dev/github.com/iwdgo/htmlutils) includes examples.
