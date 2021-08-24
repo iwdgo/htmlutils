@@ -7,11 +7,11 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/v6ce70t0jmqgehpw?svg=true)](https://ci.appveyor.com/project/iWdGo/htmlutils)
 ![Build status](https://github.com/iwdgo/htmlutils/workflows/Go/badge.svg)
 
-# Exploring html.Node trees
+# Exploring HTML structure
 
-html.Node trees as parsed using [golang.org/x/net/html](https://godoc.org/golang.org/x/net/html).
+HTML is parsed using [golang.org/x/net/html](https://godoc.org/golang.org/x/net/html) which produces a tree.
 
-The module provides basic functionality to compare HTML tags or html.Node and their trees.
+The module provides basic functionality to compare HTML tags or nodes and their trees.
 The search of an HTML tag using a *node.HTML type ignores pointers.
 It always returns the first match. By ignoring some properties, tags `<button>` are easy to count.
 Text value of a tag (title, error message,...) can be checked.
@@ -27,3 +27,8 @@ Order of attributes is treated as irrelevant.
 # How to start
 
 Detailed [documentation](https://pkg.go.dev/github.com/iwdgo/htmlutils) includes examples.
+
+# Versions
+
+`v1.0.4` requires Go 1.17 which implements lazy loading of modules to avoid go.mod updates.
+`v1.0.0` was created on Go 1.12 which supports modules.
