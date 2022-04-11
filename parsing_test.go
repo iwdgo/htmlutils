@@ -108,7 +108,6 @@ func TestGetText(t *testing.T) {
 	}
 }
 
-// Testing the search of a tag
 func TestFindTag(t *testing.T) {
 	d, _ := ParseFile(f2)
 	tagToFind := "table"
@@ -124,7 +123,7 @@ func TestFindTag(t *testing.T) {
 	}
 }
 
-// Testing the the search of a node based on values which are not pointers, i.e. the tree of the node is not taken into
+// Testing the search of a node based on values which are not pointers, i.e. the tree of the node is not taken into
 // account. Exact match between nodes is expected.
 func TestFindNodes(t *testing.T) {
 	f := f2
@@ -154,8 +153,7 @@ func TestFindNodes(t *testing.T) {
 	}
 }
 
-// Testing nodes comparison
-// Using nil to include (+0.8%)
+// Testing comparison of nodes with a nil value.
 func TestIncludeNode(t *testing.T) {
 	var n html.Node
 	n.Type = html.ElementNode
@@ -166,7 +164,6 @@ func TestIncludeNode(t *testing.T) {
 	}
 }
 
-// Using nil to include (+0.9%)
 func TestIncludedNodeTyped(t *testing.T) {
 	var n html.Node
 	n.Type = html.ElementNode
@@ -177,7 +174,6 @@ func TestIncludedNodeTyped(t *testing.T) {
 	}
 }
 
-// Using nil to include (+0.8%)
 func TestIdenticalNilNodes(t *testing.T) {
 	var n html.Node
 	n.Type = html.ElementNode
