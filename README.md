@@ -2,14 +2,14 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/iwdgo/htmlutils)](https://goreportcard.com/report/github.com/iwdgo/htmlutils)
 [![codecov](https://codecov.io/gh/iWdGo/htmlutils/branch/master/graph/badge.svg)](https://codecov.io/gh/iWdGo/htmlutils)
 
-[![Build Status](https://travis-ci.com/iWdGo/htmlutils.svg?branch=master)](https://travis-ci.com/iWdGo/htmlutils)
-[![Build Status](https://api.cirrus-ci.com/github/iWdGo/htmlutils.svg)](https://cirrus-ci.com/github/iWdGo/htmlutils)
+[![Build Status](https://app.travis-ci.com/iwdgo/htmlutils.svg?branch=master)](https://app.travis-ci.com/iwdgo/htmlutils)
+[![Build Status](https://api.cirrus-ci.com/github/iwdgo/htmlutils.svg)](https://cirrus-ci.com/github/iwdgo/htmlutils)
 [![Build status](https://ci.appveyor.com/api/projects/status/v6ce70t0jmqgehpw?svg=true)](https://ci.appveyor.com/project/iWdGo/htmlutils)
 ![Build status](https://github.com/iwdgo/htmlutils/workflows/Go/badge.svg)
 
 # Exploring HTML structure
 
-HTML is parsed using [golang.org/x/net/html](https://godoc.org/golang.org/x/net/html) which produces a tree.
+HTML is parsed using [golang.org/x/net/html](https://pkg.go.dev/golang.org/x/net/html) which produces a tree.
 
 The module provides basic functionality to compare HTML tags or nodes and their trees.
 The search of an HTML tag using a *node.HTML type ignores pointers.
