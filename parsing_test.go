@@ -99,7 +99,7 @@ func TestPrintData(t *testing.T) {
 
 func TestGetText(t *testing.T) {
 	b := new(bytes.Buffer)
-	fmt.Fprint(b, HTMLf)
+	_, _ = fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b) // Any parsing error would occurred elsewhere
 	w := new(bytes.Buffer)
 	GetText(o, w)
@@ -220,7 +220,7 @@ func TestIncludeNodes(t *testing.T) {
 		},
 	}
 	b := new(bytes.Buffer)
-	fmt.Fprint(b, fragments[0].s)
+	_, _ = fmt.Fprint(b, fragments[0].s)
 	original, err := html.Parse(b)
 	// Buffer is empty after parsing
 	if err != nil {
@@ -232,7 +232,7 @@ func TestIncludeNodes(t *testing.T) {
 		log.Println("---")
 	}
 	for i, f := range fragments {
-		fmt.Fprint(b, f.s)
+		_, _ = fmt.Fprint(b, f.s)
 		n, err := html.Parse(b)
 		if err != nil {
 			t.Errorf("---FAIL %d: %v while parsing %s", i, err, f.s)
@@ -284,7 +284,7 @@ func TestIncludeNodeTyped(t *testing.T) {
 			true},
 	}
 	b := new(bytes.Buffer)
-	fmt.Fprint(b, fragments[0].s)
+	_, _ = fmt.Fprint(b, fragments[0].s)
 	original, err := html.Parse(b)
 	// Buffer is empty after parsing
 	if err != nil {
@@ -295,7 +295,7 @@ func TestIncludeNodeTyped(t *testing.T) {
 		log.Println("---")
 	}
 	for i, f := range fragments {
-		fmt.Fprint(b, f.s)
+		_, _ = fmt.Fprint(b, f.s)
 		n, err := html.Parse(b)
 		if err != nil {
 			t.Errorf("---FAIL %d: %v while parsing %s", i, err, f.s)
@@ -345,7 +345,7 @@ func TestIdenticalNodes(t *testing.T) {
 			false},
 	}
 	b := new(bytes.Buffer)
-	fmt.Fprint(b, fragments[0].s)
+	_, _ = fmt.Fprint(b, fragments[0].s)
 	original, err := html.Parse(b)
 	// Buffer is empty after parsing
 	if err != nil {
@@ -356,7 +356,7 @@ func TestIdenticalNodes(t *testing.T) {
 		log.Println("---")
 	}
 	for i, f := range fragments {
-		fmt.Fprint(b, f.s)
+		_, _ = fmt.Fprint(b, f.s)
 		n, err := html.Parse(b)
 		if err != nil {
 			t.Errorf("--- FAIL %d: %v while parsing %s", i, err, f.s)
@@ -504,7 +504,7 @@ func TestAttrIncluded(t *testing.T) {
 	b := new(bytes.Buffer)
 	for _, m := range tagsToFind {
 		want := PrintData(&m.n)
-		fmt.Fprint(b, HTMLf2)
+		_, _ = fmt.Fprint(b, HTMLf2)
 		p, err := html.Parse(b) // Any parsing error would occurred elsewhere
 		if err != nil {
 			t.Error(err)
