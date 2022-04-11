@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/net/html"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -573,15 +574,22 @@ func TestFindTags(t *testing.T) {
 	}
 }
 
-// TODO Reaching 100% coverage requires to fail buffer reading which is the only error returned by .Parse()
-// No logic error on HTML tags can return an error.
-/*
-func TestParseError(t *testing.T) {
-	b := new(bytes.Buffer)
-	// Fill the buffer.
-	if _, err := html.Parse(b); err == nil {
-		t.Error("expected to fail")
-	}
+// html.Parse() does not return an error for its structure.
+// To cover error processing, the Read method always returns an error.
+type ErrReader struct{ Error error }
+
+func (e *ErrReader) Read([]byte) (int, error) {
+	return 0, e.Error
 }
 
-*/
+func TestIsTextNodeParseError(t *testing.T) {
+	const parseError = "failing html.Parse()"
+	err := IsTextNode(io.NopCloser(&ErrReader{errors.New(parseError)}), nil, "")
+	if err == nil {
+		t.Error("expected to fail")
+	}
+	want := fmt.Sprintf("parsing: %s", parseError)
+	if err.Error() != want {
+		t.Errorf("got \"%s\", want \"%s\"", err.Error(), want)
+	}
+}
