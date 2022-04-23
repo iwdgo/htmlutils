@@ -12,14 +12,14 @@
 HTML is parsed using [golang.org/x/net/html](https://pkg.go.dev/golang.org/x/net/html) which produces a tree.
 
 The module provides basic functionality to compare HTML tags or nodes and their trees.
-The search of an HTML tag using a *node.HTML type ignores pointers.
-It always returns the first match. By ignoring some properties, tags `<button>` are easy to count.
+The search of an HTML tag using a `*node.HTML` type ignores pointers.
+It always returns the first match. By ignoring some properties, tags like `<button>` are easy to count.
 Text value of a tag (title, error message,...) can be checked.
 
 # Good to know
 
-Parsing is not a complete syntax checker of HTML.
-For instance, tags that may be omitted like `<p>` would fail a comparison.
+Parsing is not done according to the complete syntax checker of HTML.
+For instance, tags like `<p>` for which a closing tag would fail a comparison.
 
 Siblings must always have the same order or comparison fails.
 Order of attributes is treated as irrelevant.
@@ -30,5 +30,7 @@ Detailed [documentation](https://pkg.go.dev/github.com/iwdgo/htmlutils) includes
 
 # Versions
 
-`v1.0.4` requires Go 1.17 which implements lazy loading of modules to avoid go.mod updates.
+`v1.0.5` requires Go 1.16+ as ioutil package use is removed.  
+`v1.0.4` requires Go 1.17+ which implements lazy loading of modules to avoid go.mod updates.  
 `v1.0.0` was created on Go 1.12 which supports modules.
+
