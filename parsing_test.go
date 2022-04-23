@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"golang.org/x/net/html"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -378,7 +377,7 @@ func TestIsTextTag(t *testing.T) {
 		{"Wrong title on empty buffer", false},
 	}
 	tag := "caption"
-	f, err := ioutil.ReadFile(f2)
+	f, err := os.ReadFile(f2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -386,7 +385,7 @@ func TestIsTextTag(t *testing.T) {
 	for _, ref := range titles {
 		b.Reset()
 		b.Write(f)
-		err = IsTextTag(ioutil.NopCloser(b), tag, ref.s)
+		err = IsTextTag(io.NopCloser(b), tag, ref.s)
 		if err == nil && ref.b {
 			// success as expected
 		} else if err != nil && !ref.b && strings.Contains(err.Error(), "not found") {
@@ -398,7 +397,7 @@ func TestIsTextTag(t *testing.T) {
 		}
 	}
 
-	err = IsTextTag(ioutil.NopCloser(b), tag, titles[0].s)
+	err = IsTextTag(io.NopCloser(b), tag, titles[0].s)
 	if err == nil {
 		t.Error("titles are identical and should not")
 	} else if strings.Contains(err.Error(), "not found") {
@@ -420,7 +419,7 @@ func TestIsTextNode(t *testing.T) {
 	n.Type = html.ElementNode
 	n.Data = "caption"
 	// n.Attr = nil // empty array is invalid
-	f, err := ioutil.ReadFile(f2)
+	f, err := os.ReadFile(f2)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -437,7 +436,7 @@ func TestIsTextNode(t *testing.T) {
 	for _, ref := range titles {
 		b.Reset()
 		b.Write(f)
-		err = IsTextNode(ioutil.NopCloser(b), &n, ref.s)
+		err = IsTextNode(io.NopCloser(b), &n, ref.s)
 		if err == nil && ref.b {
 			// success as expected
 		} else if err != nil && !ref.b && strings.Contains(err.Error(), "not found") {
@@ -450,7 +449,7 @@ func TestIsTextNode(t *testing.T) {
 	}
 
 	// On empty buffer
-	err = IsTextNode(ioutil.NopCloser(b), &n, "does-not-matter")
+	err = IsTextNode(io.NopCloser(b), &n, "does-not-matter")
 	if err == nil {
 		t.Fatal("node was unexpectedly found")
 	}
@@ -462,7 +461,7 @@ func TestIsTextNode(t *testing.T) {
 	b.Reset()
 	b.Write(f)
 	n.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex2"}}
-	err = IsTextNode(ioutil.NopCloser(b), &n, "does-not-matter")
+	err = IsTextNode(io.NopCloser(b), &n, "does-not-matter")
 	if err == nil {
 		t.Fatal("node was unexpectedly found")
 	}
