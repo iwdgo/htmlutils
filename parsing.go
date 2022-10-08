@@ -118,15 +118,6 @@ func FindTags(n *html.Node, s string, t html.NodeType) (a []*html.Node) {
 	return
 }
 
-// Search using Node
-//
-func indent(i int) (s string) {
-	for j := 0; j < i; j++ {
-		s += "."
-	}
-	return
-}
-
 // PrintNodes prints the tree structure of node m until n node is equal.
 // If nil is passed, the complete node is printed.
 // Values are indented based on the recursion depth d which is usually 0 when called
@@ -136,7 +127,7 @@ func PrintNodes(m, n *html.Node, t html.NodeType, d int) {
 		fmt.Printf("\ntag found: %s", PrintData(m))
 	}
 	if m.FirstChild != nil {
-		fmt.Printf("\n%s", indent(d)) // Siblings on one line
+		fmt.Printf("\n%s", strings.Repeat(".", d)) // Siblings on one line
 	}
 	d++
 	for o := m.FirstChild; o != nil; o = o.NextSibling {
