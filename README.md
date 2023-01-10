@@ -5,7 +5,7 @@
 [![Build Status](https://app.travis-ci.com/iwdgo/htmlutils.svg?branch=master)](https://app.travis-ci.com/iwdgo/htmlutils)
 [![Build Status](https://api.cirrus-ci.com/github/iwdgo/htmlutils.svg)](https://cirrus-ci.com/github/iwdgo/htmlutils)
 [![Build status](https://ci.appveyor.com/api/projects/status/v6ce70t0jmqgehpw?svg=true)](https://ci.appveyor.com/project/iWdGo/htmlutils)
-![Build status](https://github.com/iwdgo/htmlutils/workflows/Go/badge.svg)
+[![Go](https://github.com/iwdgo/htmlutils/actions/workflows/go.yml/badge.svg)](https://github.com/iwdgo/htmlutils/actions/workflows/go.yml)
 
 # Exploring HTML structure
 
