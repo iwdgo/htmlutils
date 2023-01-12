@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	f1 = "want_Test1.html"
-	f2 = "want_Test2.html"
+	HTMLf2 = `<p class="ex1" style="visibility: hidden;">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
+	f1     = "want_Test1.html"
+	f2     = "want_Test2.html"
 )
 
 var parsingErr = []error{
@@ -93,17 +94,6 @@ func TestPrintData(t *testing.T) {
 	want := "p (Element) [{ class ex2}]"
 	if s := PrintData(&tagToFind); s != want {
 		t.Errorf("printData: got %s, want %s", s, want)
-	}
-}
-
-func TestGetText(t *testing.T) {
-	b := new(bytes.Buffer)
-	_, _ = fmt.Fprint(b, HTMLf)
-	o, _ := html.Parse(b) // Any parsing error would occurred elsewhere
-	w := new(bytes.Buffer)
-	GetText(o, w)
-	if s := fmt.Sprint(w); s != "HTML Fragment to compare against others below to test diffs" {
-		t.Errorf("incorrect text")
 	}
 }
 
@@ -476,7 +466,7 @@ func TestParseFileErrorFile(t *testing.T) {
 	}
 }
 
-// Testing the the search of a node based on values which are not pointers,
+// Testing the search of a node based on values which are not pointers,
 // i.e. the tree of the node is not taken into account.
 func TestAttrIncluded(t *testing.T) {
 	tagsToFind := []struct {
@@ -587,4 +577,29 @@ func TestIsTextNodeParseError(t *testing.T) {
 	if err.Error() != want {
 		t.Errorf("got \"%s\", want \"%s\"", err.Error(), want)
 	}
+}
+
+// ExampleIncludeNode is using the test files to demonstrate usage.
+func ExampleIncludedNode() {
+	// f1 is the main table tag included in f2
+	toFind := html.Node{Type: html.ElementNode,
+		Data: "table",
+		Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "fixed"}},
+	}
+	pm, _ := ParseFile(f1)
+	m := FindNode(pm, toFind) // searching <table> in d1
+	if m == nil {
+		fmt.Printf("%s not found in %s \n", PrintData(&toFind), f1)
+	}
+
+	pn, _ := ParseFile(f2)
+	n := FindNode(pn, toFind) // searching <table> in d2
+	if n == nil {
+		fmt.Printf("%s not found in %s \n", PrintData(&toFind), f2)
+	}
+	// Is n included in m
+	if f := IncludedNode(n, m); f != nil {
+		fmt.Printf("nodes structures diverge from : %s\n", PrintData(f))
+	}
+	// Output:
 }

@@ -1,40 +1,24 @@
-package parsing
+package parsing_test
 
 import (
 	"bytes"
 	"fmt"
+	parsing "github.com/iwdgo/htmlutils"
 	"golang.org/x/net/html"
 	"log"
 )
 
-const (
-	HTMLf  = `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
-	HTMLf2 = `<p class="ex1" style="visibility: hidden;">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
-)
+const HTMLf = `<p class="ex1">HTML Fragment to compare against <em>others below</em> to test <sub>diffs</sub></p>`
 
-// ExampleIncludeNode is using the test files to demonstrate usage.
-func ExampleIncludedNode() {
-	// f1 is the main table tag included in f2
-	toFind := html.Node{Type: html.ElementNode,
-		Data: "table",
-		Attr: []html.Attribute{{Namespace: "", Key: "class", Val: "fixed"}},
+func ExampleGetText() {
+	b := new(bytes.Buffer)
+	_, _ = fmt.Fprint(b, HTMLf)
+	o, _ := html.Parse(b) // Any parsing error would occured elsewhere
+	w := new(bytes.Buffer)
+	parsing.GetText(o, w)
+	if s := fmt.Sprint(w); s != "HTML Fragment to compare against others below to test diffs" {
+		fmt.Println("incorrect text")
 	}
-	pm, _ := ParseFile(f1)
-	m := FindNode(pm, toFind) // searching <table> in d1
-	if m == nil {
-		fmt.Printf("%s not found in %s \n", PrintData(&toFind), f1)
-	}
-
-	pn, _ := ParseFile(f2)
-	n := FindNode(pn, toFind) // searching <table> in d2
-	if n == nil {
-		fmt.Printf("%s not found in %s \n", PrintData(&toFind), f2)
-	}
-	// Is n included in m
-	if f := IncludedNode(n, m); f != nil {
-		fmt.Printf("nodes structures diverge from : %s\n", PrintData(f))
-	}
-	// Output:
 }
 
 // ExampleExploreNode_tags only prints text.
@@ -45,7 +29,7 @@ func ExampleExploreNode_tags() {
 	if err != nil {
 		log.Fatalf("parsing error:%v\n", err)
 	}
-	ExploreNode(o, "", html.TextNode)
+	parsing.ExploreNode(o, "", html.TextNode)
 	// Output: HTML Fragment to compare against  (Text)
 	//  others below (Text) to test  (Text)
 	//  diffs (Text)
@@ -56,7 +40,7 @@ func ExampleExploreNode_all() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
-	ExploreNode(o, "", html.ErrorNode)
+	parsing.ExploreNode(o, "", html.ErrorNode)
 	// Output: (Document)
 	//  html (Element)
 	//  head (Element) body (Element)
@@ -71,7 +55,7 @@ func ExamplePrintTags_woSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
-	PrintTags(o, "", false) // +1,6%
+	parsing.PrintTags(o, "", false) // +1,6%
 	// Output:
 	// (Document)
 	//html (Element)
@@ -90,8 +74,8 @@ func ExamplePrintTags_woSearch() {
 func ExamplePrintTags_wSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
-	o, _ := html.Parse(b)    // err ignored as failure is detected before
-	PrintTags(o, "em", true) //
+	o, _ := html.Parse(b)            // err ignored as failure is detected before
+	parsing.PrintTags(o, "em", true) //
 	// Output:
 	//html (Element)
 	//head (Element)
@@ -107,7 +91,7 @@ func ExamplePrintNodes_woSearch() {
 	b := new(bytes.Buffer)
 	fmt.Fprint(b, HTMLf)
 	o, _ := html.Parse(b)
-	PrintNodes(o, nil, html.ErrorNode, 0)
+	parsing.PrintNodes(o, nil, html.ErrorNode, 0)
 	// Output: html (Element)
 	//. head (Element) body (Element)
 	//.. p (Element) [{ class ex1}]
@@ -127,7 +111,7 @@ func ExamplePrintNodes_wSearch() {
 	tagToFind.Data = "p"
 	tagToFind.Attr = []html.Attribute{{Namespace: "", Key: "class", Val: "ex1"}}
 
-	PrintNodes(o, &tagToFind, html.ErrorNode, 0)
+	parsing.PrintNodes(o, &tagToFind, html.ErrorNode, 0)
 	// Output: html (Element)
 	//. head (Element) body (Element)
 	//.. p (Element) [{ class ex1}]
