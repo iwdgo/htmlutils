@@ -30,7 +30,8 @@ Detailed [documentation](https://pkg.go.dev/github.com/iwdgo/htmlutils) includes
 
 # Versions
 
-`v1.0.6` updates golang/go/x/net package to remove CVE-2022-27664 which does not affect x/net/html 
+`v1.0.7` removes use of files in examples to run them on pkg.go.dev  
+`v1.0.6` updates golang/go/x/net package to remove CVE-2022-27664 which does not affect x/net/html  
 `v1.0.5` requires Go 1.16+ as ioutil package use is removed.  
 `v1.0.4` requires Go 1.17+ which implements lazy loading of modules to avoid go.mod updates.  
 `v1.0.0` was created on Go 1.12 which supports modules.
